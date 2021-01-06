@@ -1,0 +1,9 @@
+{
+  "name": "realtime-chess",
+  "version": "0.1.0",
+  "description": "A realtime chess game with socket.io",
+  "main": "server.js",
+  "scripts": {},
+  "author": "addoneto",
+  "license": "MIT"
+}

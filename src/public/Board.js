@@ -9,9 +9,10 @@ class Board {
     }
 
     addInitialPieces(){
-        this.piecesMatrix.push( new Bishop([0, 7], true) );
-        this.piecesMatrix.push( new Pawn([4, 3], true) );
-        this.piecesMatrix.push( new Pawn([0, 5], true) );
+        this.piecesMatrix.push( new Bishop ([0, 7], true, this.piecesMatrix.length) );
+        this.piecesMatrix.push( new Pawn([5, 4], false, this.piecesMatrix.length) );
+        this.piecesMatrix.push( new Pawn([3, 4], true, this.piecesMatrix.length) );
+        this.piecesMatrix.push( new Pawn([2, 6], false, this.piecesMatrix.length) );
     }
 
     resize(wx, wy){
@@ -73,6 +74,10 @@ class Board {
         }
 
         return false;
+    }
+
+    deletePiece(index){
+        this.piecesMatrix.splice(index, 1);
     }
 
 }

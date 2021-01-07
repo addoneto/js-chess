@@ -30,7 +30,9 @@ class Piece {
         this.dragged = !this.dragged;
 
         if(!this.dragged){
-            if(this.checkMove(ix, iy)) return;
+
+            if(board.findIndexPiece(ix, iy)) return;
+            if(!this.checkMove(ix, iy)) return;
             this.boardPos[0] = ix;
             this.boardPos[1] = iy;
         }
@@ -50,8 +52,41 @@ class Rook extends Piece {
         else super(p, w, 'br');
     }
 
-    checkMove(){
-        // TODO
+    checkMove(ix, iy){
+        // If the piece moved both horizontal AND vertical
+        if(this.boardPos[0] != ix && this.boardPos[1] != iy) return false;
+
+        // If there is a piece on the path of the piece to the desired pos
+
+        // Moving horizontaly
+        if(this.boardPos[0] != ix){
+            const squareTraversed = this.boardPos[0] - ix;
+            
+            for(let i = 1; i < Math.abs(squareTraversed); i ++){
+
+                // If moving right add else subtract
+                const xCheck = squareTraversed < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
+                if(board.findIndexPiece(xCheck, this.boardPos[1])){
+                    return false;
+                }
+            }
+        }
+
+        // Moving verticaly
+        if(this.boardPos[1] != iy){
+            const squareTraversed = this.boardPos[1] - iy;
+
+            for(let i = 1; i < Math.abs(squareTraversed); i ++){
+
+                // If moving up add else subtract
+                const yCheck = squareTraversed < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
+                if(board.findIndexPiece(this.boardPos[0], yCheck)){
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
 

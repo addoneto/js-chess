@@ -10,53 +10,8 @@ class Board {
 
     addInitialPieces(){
         this.piecesMatrix.push( new Rook([0, 7], true) );
-
-        //  WHITE
-
-        // this.piecesMatrix.push( new Rook([0, 7], true) );
-        // this.piecesMatrix.push( new Rook([7, 7], true) );
-
-        // this.piecesMatrix.push( new Knight([1, 7], true) );
-        // this.piecesMatrix.push( new Knight([6, 7], true) );
-
-        // this.piecesMatrix.push( new Bishop([2, 7], true) );
-        // this.piecesMatrix.push( new Bishop([5, 7], true) );
-
-        // this.piecesMatrix.push( new King([4, 7], true) );
-        // this.piecesMatrix.push( new Queen([3, 7], true) );
-
-        // this.piecesMatrix.push( new Pawn([0, 6], true) );
-        // this.piecesMatrix.push( new Pawn([1, 6], true) );
-        // this.piecesMatrix.push( new Pawn([2, 6], true) );
-        // this.piecesMatrix.push( new Pawn([3, 6], true) );
-        // this.piecesMatrix.push( new Pawn([4, 6], true) );
-        // this.piecesMatrix.push( new Pawn([5, 6], true) );
-        // this.piecesMatrix.push( new Pawn([6, 6], true) );
-        // this.piecesMatrix.push( new Pawn([7, 6], true) );
-
-        //  BLACK
-
-        // this.piecesMatrix.push( new Rook([0, 0], false) );
-        // this.piecesMatrix.push( new Rook([7, 0], false) );
-
-        // this.piecesMatrix.push( new Knight([1, 0], false) );
-        // this.piecesMatrix.push( new Knight([6, 0], false) );
-
-        // this.piecesMatrix.push( new Bishop([2, 0], false) );
-        // this.piecesMatrix.push( new Bishop([5, 0], false) );
-
-        // this.piecesMatrix.push( new King([4, 0], false) );
-        // this.piecesMatrix.push( new Queen([3, 0], false) );
-
-        // this.piecesMatrix.push( new Pawn([0, 1], false) );
-        // this.piecesMatrix.push( new Pawn([1, 1], false) );
-        // this.piecesMatrix.push( new Pawn([2, 1], false) );
-        // this.piecesMatrix.push( new Pawn([3, 1], false) );
-        // this.piecesMatrix.push( new Pawn([4, 1], false) );
-        // this.piecesMatrix.push( new Pawn([5, 1], false) );
-        // this.piecesMatrix.push( new Pawn([6, 1], false) );
-        // this.piecesMatrix.push( new Pawn([7, 1], false) );
-
+        this.piecesMatrix.push( new Pawn([4, 7], true) );
+        this.piecesMatrix.push( new Pawn([0, 5], true) );
     }
 
     resize(wx, wy){
@@ -103,14 +58,21 @@ class Board {
             return;
         }
 
+        const piece = this.findIndexPiece(indexX, indexY);
+        if(piece){
+            piece.drag();
+            this.selectedPiece = piece;
+        }
+    }
+
+    findIndexPiece(x, y){
         for(let piece of this.piecesMatrix){
-            if(piece.boardPos[0] == indexX && piece.boardPos[1] == indexY){
-                piece.drag();
-                this.selectedPiece = piece;
-                return;
+            if(piece.boardPos[0] == x && piece.boardPos[1] == y){
+                return piece;
             }
         }
 
+        return false;
     }
 
 }

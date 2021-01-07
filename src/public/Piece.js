@@ -102,6 +102,27 @@ class Bishop extends Piece {
         if(w) super(p, w, 'wb');
         else super(p, w, 'bb');
     }
+
+    checkMove(ix, iy){
+        // If not moving in a perfect diagonal
+        if(Math.abs(this.boardPos[0] - ix) != Math.abs(this.boardPos[1] - iy)) return false;
+
+        // If there is a piece on the path of the piece to the desired pos
+
+        const squareTraversed = (Math.abs(this.boardPos[0] - ix) + Math.abs(this.boardPos[1] - iy)) / 2;
+
+        for(let i = 1; i < squareTraversed; i++){
+            // If moving Right ? sum to the x : subtract to the x
+            const xCheck = this.boardPos[0] - ix < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
+
+            // If moving Up ? sum to the y : subtract to the y
+            const yCheck = this.boardPos[1] - iy < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
+
+            if(board.findIndexPiece(xCheck, yCheck)) return false;
+        }
+
+        return true;
+    }
 }
 
 class King extends Piece {

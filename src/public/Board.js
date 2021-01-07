@@ -9,8 +9,8 @@ class Board {
     }
 
     addInitialPieces(){
-        this.piecesMatrix.push( new Rook([0, 7], true) );
-        this.piecesMatrix.push( new Pawn([4, 7], true) );
+        this.piecesMatrix.push( new Bishop([0, 7], true) );
+        this.piecesMatrix.push( new Pawn([4, 3], true) );
         this.piecesMatrix.push( new Pawn([0, 5], true) );
     }
 

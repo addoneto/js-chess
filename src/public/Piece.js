@@ -44,28 +44,27 @@ class Piece {
     }
 
     capture(){
-        console.log('Piece captured: ' + this.boardIndex);
-        board.deletePiece(this.boardIndex);
+        board.deletePiece(this.pieceBoardId);
         delete this;
     }
 }
 
 class Pawn extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wp' : 'bp', i); }
-
-    // FIX movement when playing black
+    constructor(p, w, i){ super(p, w, w ? 'wp' : 'bp', i); }f
 
     checkMove(ix, iy){
-        if(this.boardPos[1] - iy < 0 || this.boardPos[1] == 0) return false;
+        if(this.white && this.boardPos[1] - iy < 0) return false;
+        else if (!this.white && this.boardPos[1] - iy > 0) return false;
 
         // First moviment 
         if(!this.hasMoved){
-            if(this.boardPos[1] - iy == 2){
-                if(board.findIndexPiece(this.boardPos[0], this.boardPos[1] - 1)) return false
-            }else if(this.boardPos[1] - iy > 2) return false;
+            if(Math.abs(this.boardPos[1] - iy) <= 2){
+                if(this.white && board.findIndexPiece(this.boardPos[0], this.boardPos[1] - 1)) return false;
+                else if(!this.white && board.findIndexPiece(this.boardPos[0], this.boardPos[1] + 1)) return false;
+            }else return false;
 
         }else{
-            if(this.boardPos[1] - iy > 1) return false;
+            if(Math.abs(this.boardPos[1] - iy) != 1) return false;
         }
 
         // Capturing on diagonal
@@ -79,6 +78,8 @@ class Pawn extends Piece {
             }
 
             return false;
+        }else{
+            if(board.findIndexPiece(this.boardPos[0], iy)) return false;
         }
         
         return true;

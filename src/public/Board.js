@@ -121,9 +121,9 @@ class Board {
         return false;
     }
 
-    deletePiece(index){
-        //this.piecesMatrix.splice(index, 1);
-        this.piecesMatrix.splice(this.piecesMatrix.findIndex(x => x.pieceBoardId === index), 1);
+    deletePiece(i){
+        const idPieceIndex = this.piecesMatrix.findIndex(x => x.pieceBoardId === i);
+        this.piecesMatrix.splice(idPieceIndex, 1);
     }
 
 }

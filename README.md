@@ -12,13 +12,13 @@ A realtime chess game with Node and socket.io
     - [x] King
     - [x] Pawn
     - [x] Knight
-- [ ] Visual possible moviment
+- [ ] Game loop and Turns
 - [ ] Implement other rules
     - [ ] Castling
     - [ ] En Passent
     - [ ] Check & Checkmate
     - [ ] Pawn promotion
-- [ ] Game loop and Turnds
+- [ ] (Optional) Visual possible moviment
 - [ ] Create game server
 - [ ] Transfer rule responsabilities to server
 - [ ] Realtime game mechanics

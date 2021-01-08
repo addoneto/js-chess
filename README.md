@@ -1,14 +1,17 @@
 # Realtime Chess
 A realtime chess game with Node and socket.io
 
+![Game Screenshot](https://user-images.githubusercontent.com/25326579/103924883-7ed48a80-50f5-11eb-9518-805e95f71393.png)
+
 - [x] Draw de chess board and pieces in correct position
 - [x] Drag and drop pieces
-- [ ] Apply pieces rules
+- [x] Apply pieces rules
     - [x] Rook
     - [x] Bishop
-    - [ ] Queen
-    - [ ] Pawn
-    - [ ] Knight
+    - [x] Queen
+    - [x] King
+    - [x] Pawn
+    - [x] Knight
 - [ ] Visual possible moviment
 - [ ] Implement other rules
     - [ ] Castling

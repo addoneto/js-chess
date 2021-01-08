@@ -7,9 +7,6 @@ let board, mouseX, mouseY;
 function start(){
     board = new Board();
 
-    board.resize(window.innerWidth, window.innerHeight);
-    board.addInitialPieces();
-
     window.addEventListener("resize", () => {
         board.resize(window.innerWidth, window.innerHeight)
     });
@@ -19,7 +16,6 @@ function start(){
 
 function update(){
     board.drawBoard();
-
     window.requestAnimationFrame(update);
 }
 

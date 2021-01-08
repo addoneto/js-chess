@@ -1,13 +1,13 @@
 class Piece {
-    constructor(p, w, l, i){
+    constructor(p, w, l, id){
+        this.pieceBoardId = id;
+
         this.boardPos = p;
         this.white = w;
-        this.dragged = false;
-
         this.imgPathName = l;
-        this.hasMoved = false;
 
-        this.boardIndex = i;
+        this.dragged = false;
+        this.hasMoved = false;
     }
 
     draw(tileSize){
@@ -44,7 +44,7 @@ class Piece {
     }
 
     capture(){
-        console.log('Piece captured: ' + this);
+        console.log('Piece captured: ' + this.boardIndex);
         board.deletePiece(this.boardIndex);
         delete this;
     }
@@ -141,10 +141,31 @@ class Rook extends Piece {
     }
 }
 
+const knightMoves = [
+ [1,2], [2,1], [2,-1], [1, -2],
+ [-1,2], [-2,1], [-2, -1], [-1, -2]
+];
+
 class Knight extends Piece {
-    constructor(p, w){
-        if(w) super(p, w, 'wkn');
-        else super(p, w, 'bkn');
+    constructor(p, w, i){ super(p, w, w ? 'wkn' : 'bkn', i); }
+
+    checkMove(ix, iy){
+        const relativeBoardPos = [this.boardPos[0] - ix, this.boardPos[1] - iy];
+
+        // 2D Array Includes
+        let allowMove = false;
+        for(let m of knightMoves){
+            if(m[0] === relativeBoardPos[0] && m[1] === relativeBoardPos[1]){
+                allowMove = true;
+                break;
+            }
+        }
+
+        if(allowMove){
+            const findPiece = board.findIndexPiece(ix, iy);
+            if(findPiece && findPiece.white != this.white) findPiece.capture()
+            return true;
+        }else return false;
     }
 }
 
@@ -183,15 +204,95 @@ class Bishop extends Piece {
 }
 
 class King extends Piece {
-    constructor(p, w){
-        if(w) super(p, w, 'wk');
-        else super(p, w, 'bk');
+    constructor(p, w, i){ super(p, w, w ? 'wk' : 'bk', i); }
+
+    checkMove(ix, iy){
+        if(Math.board(this.boardPos[0] - ix) > 2 ||
+            Math.board(this.boardPos[1] - iy) > 2){ 
+
+            return false;
+        }
+
+        const findPiece = board.findIndexPiece(ix, iy);
+        if(findPiece && findPiece.white != this.white){
+            findPiece.capture();
+            return true;
+
+        }else return false;
     }
 }
 
 class Queen extends Piece {
-    constructor(p, w){
-        if(w) super(p, w, 'wq');
-        else super(p, w, 'bq');
+    constructor(p, w, i){ super(p, w, w ? 'wq' : 'bq', i); }
+
+    checkMove(ix, iy){
+        if(this.boardPos[0] != ix && this.boardPos[1] == iy ||
+            this.boardPos[0] == ix && this.boardPos[1] != iy){
+
+             // Moving horizontaly
+            if(this.boardPos[0] != ix){
+                const squareTraversed = this.boardPos[0] - ix;
+                
+                for(let i = 1; i <= Math.abs(squareTraversed); i ++){
+
+                    // If moving right add else subtract
+                    const xCheck = squareTraversed < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
+
+                    const findPiece = board.findIndexPiece(xCheck, this.boardPos[1]);
+                    if(findPiece){
+                        // If the piece is the end of the path & colors are oposite
+                        if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
+                            findPiece.capture();
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                }
+            }
+
+            // Moving verticaly
+            if(this.boardPos[1] != iy){
+                const squareTraversed = this.boardPos[1] - iy;
+
+                for(let i = 1; i <= Math.abs(squareTraversed); i ++){
+
+                    // If moving up add else subtract
+                    const yCheck = squareTraversed < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
+
+                    const findPiece = board.findIndexPiece(this.boardPos[0], yCheck);
+                    if(findPiece){
+                        if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
+                            findPiece.capture();
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            }
+                
+        }else{
+
+            if(Math.abs(this.boardPos[0] - ix) != Math.abs(this.boardPos[1] - iy)) return false;
+            const squareTraversed = (Math.abs(this.boardPos[0] - ix) + Math.abs(this.boardPos[1] - iy)) / 2;
+
+            for(let i = 1; i <= squareTraversed; i++){
+                const xCheck = this.boardPos[0] - ix < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
+                const yCheck = this.boardPos[1] - iy < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
+                const findPiece = board.findIndexPiece(xCheck, yCheck);
+
+                if(findPiece){
+                    if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
+                        findPiece.capture();
+                        return true;
+                    }
+                    return false;
+                }
+
+            }
+        }
+
+        return true;
     }
+
 }

@@ -1,299 +1,351 @@
-class Piece {
-    constructor(p, w, l, id){
-        this.pieceBoardId = id;
-
-        this.boardPos = p;
+class Piece{
+    constructor(p, w){
+        this.imagePath = p;
         this.white = w;
-        this.imgPathName = l;
 
-        this.dragged = false;
+        this.lastPos = [];
         this.hasMoved = false;
     }
 
-    draw(tileSize){
-        var pieceImg = new Image(200, 200);
-        pieceImg.src = `./pieces/${this.imgPathName}.png`;
-
-        if(this.dragged){
-            ctx.drawImage(pieceImg,
-                0, 0, 200, 200,
-                mouseX - (tileSize/2), mouseY - (tileSize/2),
-                tileSize, tileSize);
-
-            return;
-        }
-
-        ctx.drawImage(pieceImg,
-        0, 0, 200, 200,
-        this.boardPos[0] * tileSize, this.boardPos[1]  * tileSize,
-        tileSize, tileSize);
-    }
-
-    drag(ix, iy){
-        this.dragged = !this.dragged;
-
-        if(!this.dragged){
-
-            if(board.findIndexPiece(ix, iy) && this.white === board.findIndexPiece(ix, iy).white) return;
-            if(!this.checkMove(ix, iy)) return;
-            this.boardPos[0] = ix;
-            this.boardPos[1] = iy;
-
-            this.hasMoved = true;
-        }
-    }
-
-    capture(){
-        board.deletePiece(this.pieceBoardId);
-        delete this;
+    setLastPos(ar){
+        this.lastPos = ar;
     }
 }
 
-class Pawn extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wp' : 'bp', i); }f
+class Pawn extends Piece{
+    constructor(white = true){ super(white ? 'wp' : 'bp', white); }
 
-    checkMove(ix, iy){
-        if(this.white && this.boardPos[1] - iy < 0) return false;
-        else if (!this.white && this.boardPos[1] - iy > 0) return false;
+    posibleMoves(posX, posY){
+        let moves = [];
 
-        // First moviment 
-        if(!this.hasMoved){
-            if(Math.abs(this.boardPos[1] - iy) <= 2){
-                if(this.white && board.findIndexPiece(this.boardPos[0], this.boardPos[1] - 1)) return false;
-                else if(!this.white && board.findIndexPiece(this.boardPos[0], this.boardPos[1] + 1)) return false;
-            }else return false;
+        let dir = this.white ? 1 : -1;
 
-        }else{
-            if(Math.abs(this.boardPos[1] - iy) != 1) return false;
-        }
-
-        // Capturing on diagonal
-        if(Math.abs(this.boardPos[0] - ix) != 0){
-            if(Math.abs(this.boardPos[0] - ix) > 1) return false;
-
-            const findPiece = board.findIndexPiece(ix, iy);
-            if(findPiece && findPiece.white != this.white){
-                findPiece.capture();
-                return true;
+        // WHITE 
+        if(board.piecesMatrix[posY - 1 * dir]){
+            if(!board.piecesMatrix[posY - 1 * dir][posX]){
+                moves.push([posX, posY - 1 * dir]);
             }
-
-            return false;
-        }else{
-            if(board.findIndexPiece(this.boardPos[0], iy)) return false;
+            if(board.piecesMatrix[posY - 1 * dir][posX + 1] && board.piecesMatrix[posY - 1 * dir][posX + 1].white != this.white){
+                moves.push([posX + 1, posY - 1 * dir]);
+            }
+            if(board.piecesMatrix[posY - 1 * dir][posX - 1] && board.piecesMatrix[posY - 1 * dir][posX - 1].white != this.white){
+                moves.push([posX - 1, posY - 1 * dir]);
+            }
         }
-        
-        return true;
-    }
+        if(!this.hasMoved && board.piecesMatrix[posY - 2 * dir] && !board.piecesMatrix[posY - 2 * dir][posX]){
+            moves.push([posX, posY - 2 * dir]);
+        }
 
+        return moves;
+    }
 }
 
-class Rook extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wr' : 'br', i); }
+class Rook extends Piece{
+    constructor(white = true){ super(white ? 'wr' : 'br', white); }
 
-    checkMove(ix, iy){
-        // If the piece moved both horizontal AND vertical (diagonally)
-        if(this.boardPos[0] != ix && this.boardPos[1] != iy) return false;
+    posibleMoves(posX, posY){
+        let moves = [];
 
-        // If there is a piece on the path of the piece to the desired pos
-
-        // Moving horizontaly
-        if(this.boardPos[0] != ix){
-            const squareTraversed = this.boardPos[0] - ix;
-            
-            for(let i = 1; i <= Math.abs(squareTraversed); i ++){
-
-                // If moving right add else subtract
-                const xCheck = squareTraversed < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
-
-                const findPiece = board.findIndexPiece(xCheck, this.boardPos[1]);
-                if(findPiece){
-                    // If the piece is the end of the path & colors are oposite
-                    if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                        findPiece.capture();
-                        return true;
-                    }
-                    return false;
+        // Check right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY][posX + i]){
+                if(board.piecesMatrix[posY][posX  + i].white != this.white){
+                    moves.push([posX  + i, posY]);
                 }
-                
+                break;
+            }else{
+                moves.push([posX  + i, posY]);
             }
         }
 
-        // Moving verticaly
-        if(this.boardPos[1] != iy){
-            const squareTraversed = this.boardPos[1] - iy;
+        // Check left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY][posX - i]){
+                if(board.piecesMatrix[posY][posX  - i].white != this.white){
+                    moves.push([posX  - i, posY]);
+                }
+                break;
+            }else{
+                moves.push([posX  - i, posY]);
+            }
+        }
 
-            for(let i = 1; i <= Math.abs(squareTraversed); i ++){
-
-                // If moving up add else subtract
-                const yCheck = squareTraversed < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
-
-                const findPiece = board.findIndexPiece(this.boardPos[0], yCheck);
-                if(findPiece){
-                    if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                        findPiece.capture();
-                        return true;
+        // Check up
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX]){
+                    if(board.piecesMatrix[posY - i][posX].white != this.white){
+                        moves.push([posX, posY - i]);
                     }
-                    return false;
+                    break;
+                }else{
+                    moves.push([posX, posY - i]);
+                }
+            }else{
+                break;
+            } 
+        }
+
+        // Check down
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX]){
+                    if(board.piecesMatrix[posY + i][posX].white != this.white){
+                        moves.push([posX, posY + i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX, posY + i]);
+                }
+            }else{
+                break;
+            } 
+        }
+
+        return moves;
+    }
+}
+
+class Bishop extends Piece{
+    constructor(white = true){ super(white ? 'wb' : 'bb', white); }
+
+    posibleMoves(posX, posY){
+        let moves = [];
+
+        // Diagonal Up Right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX + i]){
+                    if(board.piecesMatrix[posY - i][posX + i].white != this.white){
+                        moves.push([posX + i, posY - i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX + i, posY - i]);
                 }
             }
         }
 
-        return true;
+        // Diagonal Up Left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX - i]){
+                    if(board.piecesMatrix[posY - i][posX - i].white != this.white){
+                        moves.push([posX - i, posY - i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX - i, posY - i]);
+                }
+            }
+        }
+
+        // Diagonal Down Right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX + i]){
+                    if(board.piecesMatrix[posY + i][posX + i].white != this.white){
+                        moves.push([posX + i, posY + i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX + i, posY + i]);
+                }
+            }
+        }
+
+        // Diagonal Down Left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX - i]){
+                    if(board.piecesMatrix[posY + i][posX - i].white != this.white){
+                        moves.push([posX - i, posY + i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX - i, posY + i]);
+                }
+            }
+        }
+
+        return moves;
+    }
+}
+
+class King extends Piece{
+    constructor(white = true){ super(white ? 'wk' : 'bk', white); }
+
+    posibleMoves(posX, posY){
+        let moves = [];
+
+        for(let y = -1; y <= 1; y++){
+            for(let x = -1; x <= 1; x++){
+                if(!(x === 0 && y === 0)){
+                    if(board.piecesMatrix[posY + y]){
+                        if(board.piecesMatrix[posY + y][posX + x]){
+                            if(board.piecesMatrix[posY + y][posX + x].white != this.white){
+                                moves.push([posX + x, posY + y]);
+                            }
+                        }else{
+                            moves.push([posX + x, posY + y]);
+                        }
+                    }else{ break; }
+                }
+            }
+        }
+
+        return moves;
     }
 }
 
 const knightMoves = [
- [1,2], [2,1], [2,-1], [1, -2],
- [-1,2], [-2,1], [-2, -1], [-1, -2]
+    [1,2], [2,1], [2,-1], [1, -2], [-1,2], [-2,1], [-2, -1], [-1, -2]
 ];
 
-class Knight extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wkn' : 'bkn', i); }
+class Knight extends Piece{
+    constructor(white = true){ super(white ? 'wkn' : 'bkn', white); }
 
-    checkMove(ix, iy){
-        const relativeBoardPos = [this.boardPos[0] - ix, this.boardPos[1] - iy];
+    posibleMoves(posX, posY){
+        let moves = [];
 
-        // 2D Array Includes
-        let allowMove = false;
-        for(let m of knightMoves){
-            if(m[0] === relativeBoardPos[0] && m[1] === relativeBoardPos[1]){
-                allowMove = true;
+        for(let pmove of knightMoves){
+            if(board.piecesMatrix[posY + pmove[1]]){
+                if(board.piecesMatrix[posY + pmove[1]][posX + pmove[0]]){
+                    if(board.piecesMatrix[posY + pmove[1]][posX + pmove[0]].white != this.white){
+                        moves.push([posX + pmove[0], posY + pmove[1]]);
+                    }
+                }else{
+                    moves.push([posX + pmove[0], posY + pmove[1]]);
+                }
+            }
+        }
+
+        return moves;
+    }
+}
+
+class Queen extends Piece{
+    constructor(white = true){ super(white ? 'wq' : 'bq', white); }
+
+    posibleMoves(posX, posY){
+        let moves = [];
+
+        // Horizontal & Vertical (Rook)
+
+        // Check right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY][posX + i]){
+                if(board.piecesMatrix[posY][posX  + i].white != this.white){
+                    moves.push([posX  + i, posY]);
+                }
                 break;
+            }else{
+                moves.push([posX  + i, posY]);
             }
         }
 
-        if(allowMove){
-            const findPiece = board.findIndexPiece(ix, iy);
-            if(findPiece && findPiece.white != this.white) findPiece.capture()
-            return true;
-        }else return false;
-    }
-}
-
-class Bishop extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wb' : 'bb', i); }
-
-    checkMove(ix, iy){
-        // If not moving in a perfect diagonal
-        if(Math.abs(this.boardPos[0] - ix) != Math.abs(this.boardPos[1] - iy)) return false;
-
-        // If there is a piece on the path of the piece to the desired pos
-
-        const squareTraversed = (Math.abs(this.boardPos[0] - ix) + Math.abs(this.boardPos[1] - iy)) / 2;
-
-        for(let i = 1; i <= squareTraversed; i++){
-            // If moving Right ? sum to the x : subtract to the x
-            const xCheck = this.boardPos[0] - ix < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
-
-            // If moving Up ? sum to the y : subtract to the y
-            const yCheck = this.boardPos[1] - iy < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
-
-            const findPiece = board.findIndexPiece(xCheck, yCheck);
-
-            if(findPiece){
-                if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                    findPiece.capture();
-                    return true;
+        // Check left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY][posX - i]){
+                if(board.piecesMatrix[posY][posX  - i].white != this.white){
+                    moves.push([posX  - i, posY]);
                 }
-                return false;
+                break;
+            }else{
+                moves.push([posX  - i, posY]);
             }
-
         }
 
-        return true;
-    }
-}
-
-class King extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wk' : 'bk', i); }
-
-    checkMove(ix, iy){
-        if(Math.board(this.boardPos[0] - ix) > 2 ||
-            Math.board(this.boardPos[1] - iy) > 2){ 
-
-            return false;
-        }
-
-        const findPiece = board.findIndexPiece(ix, iy);
-        if(findPiece && findPiece.white != this.white){
-            findPiece.capture();
-            return true;
-
-        }else return false;
-    }
-}
-
-class Queen extends Piece {
-    constructor(p, w, i){ super(p, w, w ? 'wq' : 'bq', i); }
-
-    checkMove(ix, iy){
-        if(this.boardPos[0] != ix && this.boardPos[1] == iy ||
-            this.boardPos[0] == ix && this.boardPos[1] != iy){
-
-             // Moving horizontaly
-            if(this.boardPos[0] != ix){
-                const squareTraversed = this.boardPos[0] - ix;
-                
-                for(let i = 1; i <= Math.abs(squareTraversed); i ++){
-
-                    // If moving right add else subtract
-                    const xCheck = squareTraversed < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
-
-                    const findPiece = board.findIndexPiece(xCheck, this.boardPos[1]);
-                    if(findPiece){
-                        // If the piece is the end of the path & colors are oposite
-                        if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                            findPiece.capture();
-                            return true;
-                        }
-                        return false;
+        // Check up
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX]){
+                    if(board.piecesMatrix[posY - i][posX].white != this.white){
+                        moves.push([posX, posY - i]);
                     }
-                    
+                    break;
+                }else{
+                    moves.push([posX, posY - i]);
                 }
-            }
+            }else{
+                break;
+            } 
+        }
 
-            // Moving verticaly
-            if(this.boardPos[1] != iy){
-                const squareTraversed = this.boardPos[1] - iy;
-
-                for(let i = 1; i <= Math.abs(squareTraversed); i ++){
-
-                    // If moving up add else subtract
-                    const yCheck = squareTraversed < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
-
-                    const findPiece = board.findIndexPiece(this.boardPos[0], yCheck);
-                    if(findPiece){
-                        if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                            findPiece.capture();
-                            return true;
-                        }
-                        return false;
+        // Check down
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX]){
+                    if(board.piecesMatrix[posY + i][posX].white != this.white){
+                        moves.push([posX, posY + i]);
                     }
+                    break;
+                }else{
+                    moves.push([posX, posY + i]);
                 }
-            }
-                
-        }else{
+            }else{
+                break;
+            } 
+        }
 
-            if(Math.abs(this.boardPos[0] - ix) != Math.abs(this.boardPos[1] - iy)) return false;
-            const squareTraversed = (Math.abs(this.boardPos[0] - ix) + Math.abs(this.boardPos[1] - iy)) / 2;
+        // Diagonals (Bishop)
 
-            for(let i = 1; i <= squareTraversed; i++){
-                const xCheck = this.boardPos[0] - ix < 0 ? this.boardPos[0] + i : this.boardPos[0] - i;
-                const yCheck = this.boardPos[1] - iy < 0 ? this.boardPos[1] + i : this.boardPos[1] - i;
-                const findPiece = board.findIndexPiece(xCheck, yCheck);
-
-                if(findPiece){
-                    if(i == Math.abs(squareTraversed) && findPiece.white != this.white){
-                        findPiece.capture();
-                        return true;
+        // Diagonal Up Right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX + i]){
+                    if(board.piecesMatrix[posY - i][posX + i].white != this.white){
+                        moves.push([posX + i, posY - i]);
                     }
-                    return false;
+                    break;
+                }else{
+                    moves.push([posX + i, posY - i]);
                 }
-
             }
         }
 
-        return true;
-    }
+        // Diagonal Up Left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY - i]){
+                if(board.piecesMatrix[posY - i][posX - i]){
+                    if(board.piecesMatrix[posY - i][posX - i].white != this.white){
+                        moves.push([posX - i, posY - i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX - i, posY - i]);
+                }
+            }
+        }
 
+        // Diagonal Down Right
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX + i]){
+                    if(board.piecesMatrix[posY + i][posX + i].white != this.white){
+                        moves.push([posX + i, posY + i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX + i, posY + i]);
+                }
+            }
+        }
+
+        // Diagonal Down Left
+        for(let i = 1; i <= 7; i++){
+            if(board.piecesMatrix[posY + i]){
+                if(board.piecesMatrix[posY + i][posX - i]){
+                    if(board.piecesMatrix[posY + i][posX - i].white != this.white){
+                        moves.push([posX - i, posY + i]);
+                    }
+                    break;
+                }else{
+                    moves.push([posX - i, posY + i]);
+                }
+            }
+        }
+
+        return moves;
+    }
 }

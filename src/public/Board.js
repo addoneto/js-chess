@@ -3,60 +3,22 @@ class Board {
         this.sideSize = 0;
         this.tileSize = 0;
 
-        this.selectedPiece = null;
+        this.selectedPiece = '';
+        this.currentPossibleMoves = [];
 
-        this.piecesMatrix = [];
+        this.piecesMatrix = [
+            [new Rook(false), new Knight(false), new Bishop(false), new Queen(false), new King(false), new Bishop(false), new Knight(false), new Rook(false)],
+            [new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false)],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            ['', '', '', '', '', '', '', ''],
+            [new Pawn(), new Pawn(), new Pawn(), new Pawn(), new Pawn(), new Pawn(), new Pawn(), new Pawn()],
+            [new Rook(), new Knight(), new Bishop(), new Queen(), new King(), new Bishop(), new Knight(), new Rook()],
+        ];
 
         this.resize(window.innerWidth, window.innerHeight);
-        this.setupBoard();
-    }
-
-    setupBoard(){
-        //  WHITE
-
-        this.piecesMatrix.push( new Rook  ([0, 7], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Rook  ([7, 7], true, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Knight([1, 7], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Knight([6, 7], true, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Bishop([2, 7], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Bishop([5, 7], true, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new King  ([4, 7], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Queen ([3, 7], true, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Pawn  ([0, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([1, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([2, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([3, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([4, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([5, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([6, 6], true, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([7, 6], true, this.piecesMatrix.length) );
-
-        //  BLACK
-
-        this.piecesMatrix.push( new Rook  ([0, 0], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Rook  ([7, 0], false, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Knight([1, 0], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Knight([6, 0], false, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Bishop([2, 0], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Bishop([5, 0], false, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new King  ([4, 0], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Queen ([3, 0], false, this.piecesMatrix.length) );
-
-        this.piecesMatrix.push( new Pawn  ([0, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([1, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([2, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([3, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([4, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([5, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([6, 1], false, this.piecesMatrix.length) );
-        this.piecesMatrix.push( new Pawn  ([7, 1], false, this.piecesMatrix.length) );
+        this.drawBoard();
     }
 
     resize(wx, wy){
@@ -68,62 +30,84 @@ class Board {
 
         canvas.width = side;
         canvas.height = side;
-
-        //this.drawBoard();
     }
 
     drawBoard(){
-        for(let i = 0; i < 8; i++){
-            for(let j = 0; j < 8; j++){
-
-                ctx.fillStyle = (i + j) % 2 ? tileColors[0] : tileColors[1];
-
-                ctx.fillRect(i * this.tileSize, j * this.tileSize,
+        for(let x = 0; x < 8; x++){
+            for(let y = 0; y < 8; y++){
+                ctx.fillStyle = (x + y) % 2 ? tileColors[0] : tileColors[1];
+                ctx.fillRect(x * this.tileSize, y * this.tileSize,
                             this.tileSize, this.tileSize);
+
+                if(this.piecesMatrix[y][x]){
+                    const pieceImg = new Image(200, 200);
+                    pieceImg.src = `./pieces/${this.piecesMatrix[y][x].imagePath}.png`;
             
+                    ctx.drawImage(pieceImg, 0, 0, 200, 200,
+                    x * this.tileSize, y  * this.tileSize, this.tileSize, this.tileSize);
+                }
             }
         }
 
-        this.drawPieces();
+        this.drawPossibleMoves();
+        this.drawSelectedPiece();
     }
 
-    drawPieces(){
-        for(let piece of this.piecesMatrix){
-            piece.draw(this.tileSize);
+    drawSelectedPiece(){
+        if(!this.selectedPiece) return;
+
+        const pieceImg = new Image(200, 200);
+        pieceImg.src = `./pieces/${this.selectedPiece.imagePath}.png`;
+            
+        ctx.drawImage(pieceImg, 0, 0, 200, 200,
+        mouseX - this.tileSize / 2, mouseY - this.tileSize / 2,
+        this.tileSize, this.tileSize);
+    }
+
+    drawPossibleMoves(){
+        for(let pos of this.currentPossibleMoves){
+            ctx.beginPath();
+            ctx.arc(pos[0] * this.tileSize + this.tileSize / 2,
+                    pos[1] * this.tileSize + this.tileSize / 2,
+                    this.tileSize / 5, 0, 
+                    2 * Math.PI);
+            ctx.fillStyle = 'rgb(35, 150, 80, 0.5)';
+            ctx.fill();
         }
     }
 
-    selectPiece(x, y){
+    selectPiece(x,y){
+        // Capture counter
+
         const indexX = Math.floor(x / this.tileSize),
               indexY = Math.floor(y / this.tileSize);
 
-        if(this.selectedPiece){
-            // Drop piece 
-            this.selectedPiece.drag(indexX, indexY); 
-            this.selectedPiece = null;
-            return;
-        }
+        if(!this.selectedPiece){
+            if(this.piecesMatrix[indexY][indexX]){
+                this.selectedPiece = this.piecesMatrix[indexY][indexX];
+                this.selectedPiece.setLastPos([indexX, indexY]);
 
-        const piece = this.findIndexPiece(indexX, indexY);
-        if(piece && !this.selectedPiece){
-            piece.drag();
-            this.selectedPiece = piece;
-        }
-    }
+                this.piecesMatrix[indexY][indexX] = '';
 
-    findIndexPiece(x, y){
-        for(let piece of this.piecesMatrix){
-            if(piece.boardPos[0] == x && piece.boardPos[1] == y){
-                return piece;
+                this.currentPossibleMoves = this.selectedPiece.posibleMoves(indexX, indexY);
             }
+        }else{
+            //  this.currentPossibleMoves.includes([indexX, indexY]
+            for(let move of this.currentPossibleMoves){
+                if(move[0] === indexX && move[1] === indexY){
+                    this.piecesMatrix[indexY][indexX] = this.selectedPiece;
+                    this.selectedPiece.hasMoved = true;
+                    this.selectedPiece = '';
+                    this.currentPossibleMoves = [];
+
+                    return; 
+                }
+            }
+
+            this.piecesMatrix[this.selectedPiece.lastPos[1]][this.selectedPiece.lastPos[0]] = this.selectedPiece;
+            this.selectedPiece = '';
+            this.currentPossibleMoves = [];
         }
-
-        return false;
-    }
-
-    deletePiece(i){
-        const idPieceIndex = this.piecesMatrix.findIndex(x => x.pieceBoardId === i);
-        this.piecesMatrix.splice(idPieceIndex, 1);
     }
 
 }

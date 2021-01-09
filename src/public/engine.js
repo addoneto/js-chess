@@ -21,9 +21,7 @@ function update(){
 
 document.onmousemove = event => {
     event = event || window.event;
-
     const rect = canvas.getBoundingClientRect();
-
     mouseX = Math.trunc(event.clientX - rect.left),
     mouseY =  Math.trunc(event.clientY - rect.top);
 };

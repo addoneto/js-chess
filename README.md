@@ -13,7 +13,7 @@ A realtime chess game with Node and socket.io
     - [x] Pawn
     - [x] Knight
 - [x] (Optional) Visual possible moviment
-- [ ] Game loop and Turns
+- [x] Game loop and Turns
 - [ ] Implement other rules
     - [ ] Castling
     - [ ] En Passent

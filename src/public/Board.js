@@ -6,6 +6,8 @@ class Board {
         this.selectedPiece = '';
         this.currentPossibleMoves = [];
 
+        this.whiteTurn = true;
+
         this.piecesMatrix = [
             [new Rook(false), new Knight(false), new Bishop(false), new Queen(false), new King(false), new Bishop(false), new Knight(false), new Rook(false)],
             [new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false), new Pawn(false)],
@@ -77,21 +79,26 @@ class Board {
     }
 
     selectPiece(x,y){
-        // Capture counter
-
         const indexX = Math.floor(x / this.tileSize),
               indexY = Math.floor(y / this.tileSize);
-
+    
+        // Select Piece
         if(!this.selectedPiece){
             if(this.piecesMatrix[indexY][indexX]){
-                this.selectedPiece = this.piecesMatrix[indexY][indexX];
-                this.selectedPiece.setLastPos([indexX, indexY]);
+                const piece = this.piecesMatrix[indexY][indexX]
 
-                this.piecesMatrix[indexY][indexX] = '';
+                if(this.whiteTurn === piece.white){
+                    this.selectedPiece = piece;
+                    this.selectedPiece.setLastPos([indexX, indexY]);
 
-                this.currentPossibleMoves = this.selectedPiece.posibleMoves(indexX, indexY);
+                    this.piecesMatrix[indexY][indexX] = '';
+
+                    this.currentPossibleMoves = this.selectedPiece.posibleMoves(indexX, indexY);
+                }
             }
-        }else{
+        }
+        // Drop Piece
+        else{
             //  this.currentPossibleMoves.includes([indexX, indexY]
             for(let move of this.currentPossibleMoves){
                 if(move[0] === indexX && move[1] === indexY){
@@ -100,6 +107,7 @@ class Board {
                     this.selectedPiece = '';
                     this.currentPossibleMoves = [];
 
+                    this.whiteTurn = !this.whiteTurn;
                     return; 
                 }
             }
